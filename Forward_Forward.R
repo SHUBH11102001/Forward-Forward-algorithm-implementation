@@ -1,25 +1,25 @@
-# Load required libraries
+# Loading required libraries
 library(tensorflow)
 library(keras)
 library(reticulate)
 library(ggplot2)
 library(dplyr)
 
-# Load the MNIST dataset and split it into training and testing data and labels
+# Loading the MNIST dataset and spliting it into training and testing data and labels
 mnist <- dataset_mnist()
 trainx <- mnist$train$x
 trainy <- mnist$train$y
 testx <- mnist$test$x
 testy <- mnist$test$y
 
-# Convert 28*28 images into 1D 784 vectors and normalize
+# Converting 28*28 images into 1D 784 vectors and normalize
 trainx <- array_reshape(trainx, c(nrow(trainx), 784)) / 255
 testx <- array_reshape(testx, c(nrow(testx), 784)) / 255
 
 trainy <- to_categorical(trainy, 10)
 testy <- to_categorical(testy, 10)
 
-# Visualize the data
+# Visualizing the data
 par(mfrow=c(3,3))
 for(i in 1:9)
   plot(as.raster(matrix(trainx[i,], nrow=28, ncol=28), max = 1))
