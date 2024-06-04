@@ -21,8 +21,10 @@ testy <- to_categorical(testy, 10)
 
 # Visualizing the data
 par(mfrow=c(3,3))
-for(i in 1:9)
-  plot(as.raster(matrix(trainx[i,], nrow=28, ncol=28), max = 1))
+for(i in 1:9) {
+  img <- matrix(trainx[i, ], nrow = 28, ncol = 28)
+  plot(as.raster(img, max = 1))
+}
 
 # Define custom layer for the forward forward algorithm                   
 FFlayerdense <- setRefClass("FFlayerdense", contains = "Layer",
@@ -90,8 +92,8 @@ FFNetwork <- setRefClass("FFNetwork", contains = "Model",
                              self$layer_optimizer <- layer_optimizer
                              self$loss_var <- tf$Variable(0.0, trainable = FALSE, dtype = tf$float32)
                              self$loss_count <- tf$Variable(0.0, trainable = FALSE, dtype = tf$float32)
-                             self$layer_list <- list(keras_input(shape = c(dims[1])))
-                             for (d in dims[-1]) {
+                             self$layer_list <- list()
+                             for (d in dims) {
                                self$layer_list <- c(self$layer_list, FFlayerdense(units = d, optimizer = self$layer_optimizer, loss_metric = metric_mean()))
                              }
                            },   
@@ -112,7 +114,7 @@ FFNetwork <- setRefClass("FFNetwork", contains = "Model",
                              for (label in 0:9) {
                                h <- self$overlay_y_on_x(list(x, label))
                                goodness <- list()
-                               for (layer in self$layer_list[-1]) {
+                               for (layer in self$layer_list) {
                                  h <- layer$call(h[[1]])
                                  goodness <- c(goodness, tf$reduce_mean(tf$pow(h, 2), axis=1))
                                }
@@ -142,7 +144,7 @@ FFNetwork <- setRefClass("FFNetwork", contains = "Model",
                              h_pos <- x_pos
                              h_neg <- x_neg
                              
-                             for (layer in self$layer_list[-1]) {
+                             for (layer in self$layer_list) {
                                result <- layer$forward_forward(h_pos, h_neg)
                                h_pos <- result[[1]]
                                h_neg <- result[[2]]
@@ -166,7 +168,9 @@ epochs <- 250
 history <- model$fit(x = trainx, y = trainy, epochs = epochs, batch_size = 32)
 
 # Evaluate the model
-model %>% evaluate(testx, testy)
+results <- model$evaluate(testx, testy)
+cat("Test loss:", results$loss, "\n")
+cat("Test accuracy:", results$accuracy, "\n")
 
 # Plot the training history
 plot(history)
